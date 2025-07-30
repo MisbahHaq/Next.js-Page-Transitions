@@ -1,8 +1,13 @@
 import React from 'react'
+import { motion } from 'motion/react'
 
 const App = () => {
   return (
-    <div>App</div>
+    <div>
+      <motion.div className='box' animate={{
+        x: 500
+      }}></motion.div>
+    </div >
   )
 }
 
