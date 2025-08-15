@@ -66,3 +66,12 @@ nav {
     align-items: center;
     padding: 2rem;
 }
+
+.archieve {
+    width: 30%;
+    margin: 0 auto;
+    padding: 15rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
