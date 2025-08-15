@@ -7,9 +7,11 @@ import { gsap } from "gsap";
 const PageTransition = ({ children }) => {
     const router = useRouter();
     const pathname = usePathname();
+
     const overlayRef = useRef(null);
     const logoOverlayRef = useRef(null);
     const blockRef = useRef([]);
+    const logoRef = useRef(null);
     const isTransitioning = useRef(false);
 
     useEffect(() => {
@@ -27,7 +29,7 @@ const PageTransition = ({ children }) => {
         };
 
         createBlocks();
-        gsap.set(blocksRef.current, { scaleX: 0, transformOrigin: "left" });
+        gsap.set(blockRef.current, { scaleX: 0, transformOrigin: "left" });
 
         if (logoRef.current) {
             const path = logoRef.current.querySelector("path");
@@ -40,68 +42,74 @@ const PageTransition = ({ children }) => {
                 });
             }
         }
+
         revealPage();
 
-        const handleRouteChange = (url) => {
-            if (isTransitioning.current) return;
-            isTransitioning.current = true;
-            coverPage(url);
+        const handleLinkClick = (e) => {
+            const href = e.currentTarget.getAttribute("href");
+            if (href && href !== pathname && !isTransitioning.current) {
+                e.preventDefault();
+                handleRouteChange(href);
+            }
         };
 
-        const links = document.querySelectorAll("a[href^=*/*]");
-        links.forEach((link) => {
-            link.addEventListener("click", (e) => {
-                e.preventDefault();
-                const href = e.currentTarget.href;
-                const url = new URL(href).pathname;
-                if (url !== pathname) {
-                    handleRouteChange(url);
-                }
-            });
-        });
+        const links = document.querySelectorAll('a[href^="/"]');
+        links.forEach((link) => link.addEventListener("click", handleLinkClick));
 
         return () => {
-            links.forEach((link) => {
-                link.removeEventListener("click", handleRouteChange);
-            });
+            links.forEach((link) =>
+                link.removeEventListener("click", handleLinkClick)
+            );
         };
-    }, [router, pathname]);
+    }, [pathname]);
+
+    const handleRouteChange = (url) => {
+        isTransitioning.current = true;
+        coverPage(url);
+    };
 
     const coverPage = (url) => {
         const tl = gsap.timeline({
             onComplete: () => router.push(url),
         });
 
-        tl.to(blocksRef.current, {
+        tl.to(blockRef.current, {
             scaleX: 1,
             duration: 0.4,
             stagger: 0.02,
             ease: "power2.out",
             transformOrigin: "left",
         })
-            .set(
-                logoOverlayRef.current,
-                {
-                    opacity: 1,
-                },
-                "-=0.2"
-            )
-            .set(
-                logoRef.current.querySelector("path"),
-                {
-                    strokeDashoffset: logoRef.current
-                        .querySelector("path")
-                        .getTotalLength(),
-                    fill: "transparent",
-                },
-                "-=0.25"
-            ).to(logoRef.current.querySelector("path"),
-                {
-                    strokeDashoffset: 0,
-                    duration: 2,
-                    ease: "power2.inOut",
-                },
-                "-=0.5")
+            .set(logoOverlayRef.current, { opacity: 1 }, "-=0.2")
+            .to(logoRef.current.querySelector("path"), {
+                strokeDashoffset: 0,
+                duration: 2,
+                ease: "power2.inOut",
+            }, "-=0.5")
+            .to(logoRef.current.querySelector("path"), {
+                fill: "#e3e4d8",
+                duration: 1,
+                ease: "power2.out"
+            }, "-=0.5")
+            .to(logoOverlayRef.current, {
+                opacity: 0,
+                duration: 0.25,
+                ease: "power2.out",
+            });
+    };
+
+    const revealPage = () => {
+        gsap.set(blockRef.current, { scaleX: 1, transformOrigin: "right" });
+        gsap.to(blockRef.current, {
+            scaleX: 0,
+            duration: 0.4,
+            stagger: 0.02,
+            ease: "power2.out",
+            transformOrigin: "right",
+            onComplete: () => {
+                isTransitioning.current = false;
+            },
+        });
     };
 
     return (
