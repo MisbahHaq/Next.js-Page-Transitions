@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Logo from "./Logo";
 import { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -47,7 +47,62 @@ const PageTransition = ({ children }) => {
             isTransitioning.current = true;
             coverPage(url);
         };
+
+        const links = document.querySelectorAll("a[href^=*/*]");
+        links.forEach((link) => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const href = e.currentTarget.href;
+                const url = new URL(href).pathname;
+                if (url !== pathname) {
+                    handleRouteChange(url);
+                }
+            });
+        });
+
+        return () => {
+            links.forEach((link) => {
+                link.removeEventListener("click", handleRouteChange);
+            });
+        };
     }, [router, pathname]);
+
+    const coverPage = (url) => {
+        const tl = gsap.timeline({
+            onComplete: () => router.push(url),
+        });
+
+        tl.to(blocksRef.current, {
+            scaleX: 1,
+            duration: 0.4,
+            stagger: 0.02,
+            ease: "power2.out",
+            transformOrigin: "left",
+        })
+            .set(
+                logoOverlayRef.current,
+                {
+                    opacity: 1,
+                },
+                "-=0.2"
+            )
+            .set(
+                logoRef.current.querySelector("path"),
+                {
+                    strokeDashoffset: logoRef.current
+                        .querySelector("path")
+                        .getTotalLength(),
+                    fill: "transparent",
+                },
+                "-=0.25"
+            ).to(logoRef.current.querySelector("path"),
+                {
+                    strokeDashoffset: 0,
+                    duration: 2,
+                    ease: "power2.inOut",
+                },
+                "-=0.5")
+    };
 
     return (
         <>
@@ -59,7 +114,7 @@ const PageTransition = ({ children }) => {
             </div>
             {children}
         </>
-    )
-}
+    );
+};
 
 export default PageTransition;
