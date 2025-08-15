@@ -17,4 +17,7 @@ This component covers the page with staggered block animations, draws your logo 
 ---
 
 
+https://github.com/user-attachments/assets/b328151b-e9a1-4891-8de6-b25962bf81a3
+
+
 ---
