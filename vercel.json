@@ -1,10 +1,6 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "rootDirectory": "transition",
   "builds": [
     { "src": "transition/package.json", "use": "@vercel/next" }
   ]
 }
-
-
